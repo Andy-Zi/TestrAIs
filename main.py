@@ -1,41 +1,58 @@
 import pygame
+import sys
 
-from entities import BaseBlock 
+from entities import GameArea, ITetromino
+from constants import BLOCKSIZE
 
+# Initialize Pygame
 pygame.init()
 
-SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+# Set the size of the game window
+screen_width = 600
+screen_height = 1200
+screen = pygame.display.set_mode((screen_width, screen_height))
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+# Set the title of the window
+pygame.display.set_caption('Tetris')
 
-color = (255, 255, 255)
 
-player = BaseBlock(100, 100, color)
+gameArea = GameArea(10, 20, screen)
+tetromino = ITetromino(gameArea)
 
-run = True
+clock = pygame.time.Clock()
 
-while run:
-
-    screen.fill((0, 255, 0))
-
-    player.draw(screen)
-
-    key = pygame.key.get_pressed()
-    if key[pygame.K_LEFT]:
-        player.move(-1, 0)
-    if key[pygame.K_RIGHT]:
-        player.move(1, 0)
-    if key[pygame.K_UP]:
-        player.move(0, -1)
-    if key[pygame.K_DOWN]:
-        player.move(0, 1)
+# Game loop
+while True:
+    # calculate the frame rate
+    clock.tick(60)
+    
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
+            pygame.quit()
+            sys.exit()
+    
+    # Fill the screen with gray
+    screen.fill((128, 128, 128))
 
-    pygame.display.update()
+    # Draw the game area
+    gameArea.draw(screen)
+    
+    
+    # Draw the tetromino
+    tetromino.draw(screen)
+    
+    # Handle key presses
+    pressed_keys = pygame.key.get_pressed()
+    if pressed_keys[pygame.K_UP]:
+        tetromino.rotate()
+    if pressed_keys[pygame.K_DOWN]:
+        tetromino.move_down()
+    if pressed_keys[pygame.K_LEFT]:
+        tetromino.move_left()
+    if pressed_keys[pygame.K_RIGHT]:
+        tetromino.move_right()
+    
 
-
-pygame.quit()
+    # Update the display
+    pygame.display.flip()
