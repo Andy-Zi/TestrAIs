@@ -35,11 +35,26 @@ class BaseBlock:
     def moveDown(self):
         self.y += self.size
     
-    def rotate(self):
-        # rotate the blocks around the turning point
-        x = self.x - self.turningPoint[0] * BLOCKSIZE
-        y = self.y - self.turningPoint[1] * BLOCKSIZE
-        x, y = y, -x
-        x += self.turningPoint[0] * BLOCKSIZE
-        self.x = x
-        self.y = y
+    def rotate(self, clockwise=True):
+        rx, ry = self.turningPoint
+        rx += self.x
+        ry += self.y
+        x, y = self.x, self.y
+        y += self.size
+
+        if clockwise:
+            # For clockwise rotation
+            new_x = rx + (ry - y)
+            new_y = ry - (rx - x)
+        else:
+            # For counterclockwise rotation
+            new_x = rx - (ry - y)
+            new_y = ry + (rx - x)
+
+        self.x = new_x
+        self.y = new_y
+
+        new_rx = rx - new_x
+        new_ry = ry - new_y
+        
+        self.turningPoint = (new_rx, new_ry)

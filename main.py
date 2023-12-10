@@ -1,8 +1,7 @@
 import pygame
 import sys
 
-from entities import GameArea, ITetromino
-from constants import BLOCKSIZE
+from entities import GameArea, ITetromino, ZTetromino, OTetromino, STetromino, JTetromino, LTetromino, TTetromino
 
 # Initialize Pygame
 pygame.init()
@@ -17,15 +16,16 @@ pygame.display.set_caption('Tetris')
 
 
 gameArea = GameArea(10, 20, screen)
-tetromino = ITetromino(gameArea)
+tetromino = ZTetromino(gameArea)
 
 clock = pygame.time.Clock()
+
+rotationNotPressed = True
 
 # Game loop
 while True:
     # calculate the frame rate
-    clock.tick(60)
-    
+    clock.tick(30)
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -38,14 +38,16 @@ while True:
     # Draw the game area
     gameArea.draw(screen)
     
-    
     # Draw the tetromino
     tetromino.draw(screen)
     
     # Handle key presses
     pressed_keys = pygame.key.get_pressed()
-    if pressed_keys[pygame.K_UP]:
+    if pressed_keys[pygame.K_UP] and rotationNotPressed:
         tetromino.rotate()
+        rotationNotPressed = False
+    if not pressed_keys[pygame.K_UP]:
+        rotationNotPressed = True
     if pressed_keys[pygame.K_DOWN]:
         tetromino.move_down()
     if pressed_keys[pygame.K_LEFT]:
@@ -56,3 +58,4 @@ while True:
 
     # Update the display
     pygame.display.flip()
+

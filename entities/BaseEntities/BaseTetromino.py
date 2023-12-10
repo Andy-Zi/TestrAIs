@@ -12,12 +12,6 @@ class BaseTetromino:
         self.y = self.gameArea.y - len(shape) * BLOCKSIZE
         self.shape = self.shape_to_blocks(shape)
 
-    # def rotate(self):
-        # self.rotation = (self.rotation + 1) % len(self.shape)
-
-    def rotate_back(self):
-        self.rotation = (self.rotation - 1) % len(self.shape)
-
     def draw(self, surface):
         for block in self.shape:
             block.draw(surface)
@@ -48,8 +42,19 @@ class BaseTetromino:
         for i in range(len(shape)):
             for j in range(len(shape[i])):
                 if shape[i][j] == 1:
-                    turningPoint = (self.turningPoint[0] * BLOCKSIZE, self.turningPoint[1] * BLOCKSIZE)
-                    blocks.append(BaseBlock(self.x + j * BLOCKSIZE, self.y + i * BLOCKSIZE, turningPoint, self.color, self.gameArea))
+                    turningPoint_x = (self.turningPoint[0] - j) * BLOCKSIZE
+                    turningPoint_y = (self.turningPoint[1] - i) * BLOCKSIZE
+                    turningPoint = (turningPoint_x, turningPoint_y)
+                    # turningPoint = (self.turningPoint[0] * BLOCKSIZE, self.turningPoint[1] * BLOCKSIZE)
+                    blocks.append(
+                        BaseBlock(
+                            x = self.x + j * BLOCKSIZE, 
+                            y = self.y + i * BLOCKSIZE,
+                            turningPoint = turningPoint,
+                            color = self.color,
+                            gameArea = self.gameArea
+                            )
+                        )
         return blocks
 
     def rotate(self):

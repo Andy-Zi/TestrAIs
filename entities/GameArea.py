@@ -12,3 +12,9 @@ class GameArea:
     
     def draw(self, surface):
         pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, self.width, self.height), 1)
+
+        # add a grid
+        for i in range(1, self.width // BLOCKSIZE):
+            pygame.draw.line(surface, (255, 255, 255), (self.x + i * BLOCKSIZE, self.y), (self.x + i * BLOCKSIZE, self.y + self.height))
+        for i in range(1, self.height // BLOCKSIZE):
+            pygame.draw.line(surface, (255, 255, 255), (self.x, self.y + i * BLOCKSIZE), (self.x + self.width, self.y + i * BLOCKSIZE))
