@@ -8,9 +8,16 @@ class BaseTetromino:
         self.color = color
         self.gameArea = gameArea
         self.rotation = 0
-        self.x = (self.gameArea.width - len(shape[0]) * BLOCKSIZE) // 2 + self.gameArea.x
+        self.x = self.get_starting_position(shape)
         self.y = self.gameArea.y - len(shape) * BLOCKSIZE
         self.shape = self.shape_to_blocks(shape)
+    
+    def get_starting_position(self, shape):
+        gameAreaWidth = self.gameArea.width // BLOCKSIZE
+        tetrominoWidth = len(shape[0])
+        startingPosition = (gameAreaWidth - tetrominoWidth) // 2
+        startingPosition *= BLOCKSIZE
+        return startingPosition + self.gameArea.x
 
     def draw(self, surface):
         for block in self.shape:
@@ -36,6 +43,9 @@ class BaseTetromino:
                 return
         for block in self.shape:
             block.moveDown()
+        for block in self.shape:
+            if block.hitGround():
+                return True  
     
     def shape_to_blocks(self, shape):
         blocks = []
@@ -58,5 +68,22 @@ class BaseTetromino:
         return blocks
 
     def rotate(self):
+        shift_x = []
+        shift_y = []
         for block in self.shape:
-            block.rotate()
+            s_x, s_y = block.canRotate()
+            shift_x.append(s_x)
+            shift_y.append(s_y)
+        # get the absolute maximum shift but keep the sign
+        if max(shift_x) == 0:
+            shift_x = min(shift_x)
+        else:
+            shift_x = max(shift_x)
+        
+        if max(shift_y) == 0:
+            shift_y = min(shift_y)
+        else:
+            shift_y = max(shift_y)
+            
+        for block in self.shape:
+            block.rotate(shift_x, shift_y)

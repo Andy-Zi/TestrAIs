@@ -35,7 +35,7 @@ class BaseBlock:
     def moveDown(self):
         self.y += self.size
     
-    def rotate(self, clockwise=True):
+    def rotate(self, shift_x = 0, shift_y = 0, clockwise=True):
         rx, ry = self.turningPoint
         rx += self.x
         ry += self.y
@@ -51,10 +51,42 @@ class BaseBlock:
             new_x = rx - (ry - y)
             new_y = ry + (rx - x)
 
-        self.x = new_x
-        self.y = new_y
+        self.x = new_x + shift_x
+        self.y = new_y + shift_y
 
         new_rx = rx - new_x
         new_ry = ry - new_y
         
         self.turningPoint = (new_rx, new_ry)
+    
+    def canRotate(self):
+        rx, ry = self.turningPoint
+        rx += self.x
+        ry += self.y
+        x, y = self.x, self.y
+        y += self.size
+
+        # For clockwise rotation
+        new_x = rx + (ry - y)
+        new_y = ry - (rx - x)
+
+        shift_x = 0
+        shift_y = 0
+        
+        if new_x < self.gameArea.x:
+            shift_x = 30
+        if new_x + self.size > self.gameArea.x + self.gameArea.width:
+            shift_x = -30
+        if new_y < self.gameArea.y:
+            shift_y = 30
+        if  new_y + self.size > self.gameArea.y + self.gameArea.height:
+            shift_y = -30
+
+        return shift_x, shift_y
+
+    def hitGround(self):
+        # check if the block hit the ground
+        if self.y + self.size >= self.gameArea.y + self.gameArea.height:
+            return True
+        else:
+            return False
