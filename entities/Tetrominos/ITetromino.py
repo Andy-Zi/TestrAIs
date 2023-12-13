@@ -3,9 +3,9 @@ from entities import BaseTetromino
 class ITetromino(BaseTetromino):
 
     color = (7, 240, 240) # Cyan color
-    turningPoint = (2,1)
+    turningPoint = (1,2)
     
-    def __init__(self, gameArea):
+    def __init__(self, gameArea, x, y):
         super().__init__(
                 shape=[
                     [1],
@@ -15,5 +15,7 @@ class ITetromino(BaseTetromino):
                 ],
                 turningPoint=self.turningPoint,
                 color=self.color,
-                gameArea=gameArea
+                gameArea=gameArea,
+                x=x,
+                y=y
             )

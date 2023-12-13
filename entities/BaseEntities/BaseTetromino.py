@@ -3,21 +3,34 @@ from constants import BLOCKSIZE
 
 class BaseTetromino:
 
-    def __init__(self, shape, turningPoint, color, gameArea):
+    def __init__(self, shape, turningPoint, color, gameArea, x, y):
         self.turningPoint = turningPoint
         self.color = color
         self.gameArea = gameArea
         self.rotation = 0
-        self.x = self.get_starting_position(shape)
-        self.y = self.gameArea.y - len(shape) * BLOCKSIZE
-        self.shape = self.shape_to_blocks(shape)
+        self.x = x - len(shape[0]) * BLOCKSIZE // 2
+        self.y = y - len(shape) * BLOCKSIZE // 2
+        self.baseShape = shape
+        self.shape = self.shape_to_blocks(self.baseShape)
+            
+    def move_to_starting_position(self):
+        old_x = self.x
+        old_y = self.y
+        self.x = self.get_x_starting_position()
+        self.y = self.get_y_starting_position()
+        for block in self.shape:
+            block.x = self.x + block.x - old_x
+            block.y = self.y + block.y - old_y
     
-    def get_starting_position(self, shape):
+    def get_x_starting_position(self):
         gameAreaWidth = self.gameArea.width // BLOCKSIZE
-        tetrominoWidth = len(shape[0])
+        tetrominoWidth = len(self.baseShape[0])
         startingPosition = (gameAreaWidth - tetrominoWidth) // 2
         startingPosition *= BLOCKSIZE
         return startingPosition + self.gameArea.x
+    
+    def get_y_starting_position(self):
+        return self.gameArea.y - BLOCKSIZE * len(self.baseShape)
 
     def draw(self, surface):
         for block in self.shape:
@@ -46,6 +59,8 @@ class BaseTetromino:
         for block in self.shape:
             if block.hitGround():
                 return True  
+            if block.hitBlock(self.gameArea.blocks):
+                return True
     
     def shape_to_blocks(self, shape):
         blocks = []

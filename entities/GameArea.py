@@ -12,6 +12,9 @@ class GameArea:
         # define self.Blocks as a matrix of the size of the game area and initialize it with None
         self.blocks = [[None for _ in range(width)] for _ in range(height)]
     
+    def clear(self):
+        self.blocks = [[None for _ in range(len(self.blocks[0]))] for _ in range(len(self.blocks))]
+        
     def draw(self, surface):
         pygame.draw.rect(surface, (255, 255, 255), (self.x, self.y, self.width, self.height), 1)
 
@@ -26,12 +29,22 @@ class GameArea:
             for block in row:
                 if block != None:
                     block.draw(surface)
-    
-    def addBlocks(self, blocks):
+    def canAddBlocks(self, blocks):
         for block in blocks:
             x = int((block.x - self.x) // BLOCKSIZE)
             y = int((block.y - self.y) // BLOCKSIZE)
-            self.blocks[y][x] = block
+            if y < 0:
+                return False
+            return True
+        
+    def addBlocks(self, blocks):
+        if self.canAddBlocks(blocks):
+            for block in blocks:
+                x = int((block.x - self.x) // BLOCKSIZE)
+                y = int((block.y - self.y) // BLOCKSIZE)
+                self.blocks[y][x] = block
+            return True
+        return False
     
     def checkRows(self):
         for i in range(len(self.blocks)):
@@ -55,3 +68,6 @@ class GameArea:
                 self.blocks[i][j] = self.blocks[i-1][j]
                 if self.blocks[i][j] != None:
                     self.blocks[i][j].moveDown()
+    
+    def getPositionOnGrid(self, x, y):
+        return (int((x - self.x) // BLOCKSIZE), int((y - self.y) // BLOCKSIZE))

@@ -12,7 +12,7 @@ tetris.start()
 while True:
     # calculate the frame rate
     clock.tick(30)
-    
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
