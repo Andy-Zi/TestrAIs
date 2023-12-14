@@ -47,10 +47,13 @@ class GameArea:
         return False
     
     def checkRows(self):
+        lines_cleared = 0
         for i in range(len(self.blocks)):
             if self.isFullRow(i):
                 self.removeRow(i)
                 self.moveRowsDown(i)
+                lines_cleared += 1
+        return lines_cleared
     
     def isFullRow(self, row):
         for block in self.blocks[row]:

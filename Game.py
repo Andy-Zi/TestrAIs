@@ -27,6 +27,8 @@ class Game:
         pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)  # 1000 milliseconds = 1 second
         self.clock = pygame.time.Clock()
         self.key_last_pressed = {pygame.K_UP: 0, pygame.K_LEFT: 0, pygame.K_RIGHT: 0, pygame.K_DOWN: 0}
+        self.level = 1
+        self.score = 0
     
     def play(self):
         self.start()
@@ -39,7 +41,7 @@ class Game:
             current_time = time.time()
 
             for key in [pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN]:
-                if keys[key] and current_time - self.key_last_pressed[key] > 0.3:
+                if keys[key] and current_time - self.key_last_pressed[key] > 0.25:
                     self.handle_keypressed(key)
                     self.key_last_pressed[key] = current_time
 
@@ -51,7 +53,8 @@ class Game:
                         if self.active_tetromino.move_down():
                             if not self.gameArea.addBlocks(self.active_tetromino.shape):
                                 self.gameOver()
-                            self.gameArea.checkRows()
+                            lines_cleared = self.gameArea.checkRows()
+                            self.update_score(lines_cleared) 
                             self.spawnTetromino()
                         self.updateScreen()
                 if event.type == pygame.KEYDOWN:
@@ -67,7 +70,8 @@ class Game:
                 if self.active_tetromino.move_down():
                     if not self.gameArea.addBlocks(self.active_tetromino.shape):
                         self.gameOver()
-                    self.gameArea.checkRows()
+                    lines_cleared = self.gameArea.checkRows()
+                    self.update_score(lines_cleared) 
                     self.spawnTetromino()
                 self.updateScreen()
             self.updateScreen()
@@ -86,6 +90,11 @@ class Game:
         self.gameArea.draw(self.screen)
         self.active_tetromino.draw(self.screen)
         self.next_tetromino.draw(self.screen)
+        # Draw the score
+        font = pygame.font.Font(None, 36)
+        text = font.render(f'Score: {self.score}', True, (255, 255, 255))
+        self.screen.blit(text, (20, 20))  # Adjust the position as needed
+
         pygame.display.flip()
     
     def spawnTetromino(self):
@@ -107,11 +116,20 @@ class Game:
         self.active_tetromino = None
         self.playing = True
         self.start()
-    
+
+    def update_score(self, lines_cleared):
+        if lines_cleared == 1:
+            self.score += 100
+        elif lines_cleared == 2:
+            self.score += 300
+        elif lines_cleared == 3:
+            self.score += 500
+        elif lines_cleared == 4:
+            self.score += 800
+
     def gameOver(self):
         self.updateScreen()
         self.playing = False
-        self.score = 42069
 
         # Set up the font and color for text
         font = pygame.font.Font(None, 36)
