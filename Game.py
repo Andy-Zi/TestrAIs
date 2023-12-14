@@ -1,3 +1,4 @@
+import time
 import pygame
 import random
 import sys
@@ -5,9 +6,9 @@ import sys
 from entities import GameArea
 from entities import ITetromino, ZTetromino, OTetromino, STetromino, JTetromino, LTetromino, TTetromino
 
-class Game:
+MOVE_DOWN_EVENT = pygame.USEREVENT + 1
 
-    rotationNotPressed = True
+class Game:
 
     def __init__(
         self,
@@ -23,27 +24,61 @@ class Game:
         self.next_tetromino = self.get_random_tetromino()
         self.active_tetromino = None
         self.playing = True
+        pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)  # 1000 milliseconds = 1 second
+        self.clock = pygame.time.Clock()
+        self.key_last_pressed = {pygame.K_UP: 0, pygame.K_LEFT: 0, pygame.K_RIGHT: 0, pygame.K_DOWN: 0}
     
-    def handle_keypressed(self):
-        pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[pygame.K_UP] and self.rotationNotPressed:
-            self.active_tetromino.rotate()
-            self.rotationNotPressed = False
+    def play(self):
+        self.start()
+        # Game loop
+        while True:
+            # calculate the frame rate
+            self.clock.tick(30)
+
+            keys = pygame.key.get_pressed()
+            current_time = time.time()
+
+            for key in [pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN]:
+                if keys[key] and current_time - self.key_last_pressed[key] > 0.3:
+                    self.handle_keypressed(key)
+                    self.key_last_pressed[key] = current_time
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == MOVE_DOWN_EVENT:
+                        if self.active_tetromino.move_down():
+                            if not self.gameArea.addBlocks(self.active_tetromino.shape):
+                                self.gameOver()
+                            self.gameArea.checkRows()
+                            self.spawnTetromino()
+                        self.updateScreen()
+                if event.type == pygame.KEYDOWN:
+                    if event.key in [pygame.K_UP, pygame.K_LEFT, pygame.K_RIGHT, pygame.K_DOWN]:
+                        self.handle_keypressed(event.key)
+                        self.key_last_pressed[event.key] = current_time
+                    if event.key == pygame.K_UP:
+                        self.active_tetromino.rotate()
+                        self.updateScreen()
+
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_DOWN]:
+                if self.active_tetromino.move_down():
+                    if not self.gameArea.addBlocks(self.active_tetromino.shape):
+                        self.gameOver()
+                    self.gameArea.checkRows()
+                    self.spawnTetromino()
+                self.updateScreen()
             self.updateScreen()
-        if not pressed_keys[pygame.K_UP]:
-            self.rotationNotPressed = True
-        if pressed_keys[pygame.K_LEFT]:
+        
+        
+    def handle_keypressed(self,key):
+        if key == pygame.K_LEFT:
             self.active_tetromino.move_left()
             self.updateScreen()
-        if pressed_keys[pygame.K_RIGHT]:
+        if key == pygame.K_RIGHT:
             self.active_tetromino.move_right()
-            self.updateScreen()
-        if pressed_keys[pygame.K_DOWN]:
-            if self.active_tetromino.move_down():
-                if not self.gameArea.addBlocks(self.active_tetromino.shape):
-                    self.gameOver()
-                self.gameArea.checkRows()
-                self.spawnTetromino()
             self.updateScreen()
     
     def updateScreen(self):
