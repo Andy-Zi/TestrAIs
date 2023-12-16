@@ -6,8 +6,7 @@ import sys
 from Tetris.entities import GameArea, MovementHandler
 from Tetris.entities import ITetromino, ZTetromino, OTetromino, STetromino, JTetromino, LTetromino, TTetromino
 
-MOVE_DOWN_EVENT = pygame.USEREVENT + 1
-
+from Tetris.events import *
 class Tetris(MovementHandler):
 
     def __init__(self, screen_width: int = 600, screen_height: int = 1200) -> None:
@@ -20,8 +19,6 @@ class Tetris(MovementHandler):
         super().__init__(gameArea, active_tetromino)
 
         pygame.display.set_caption('Tetris')
-        self.staging_x = self.gameArea.x + self.gameArea.width + 80
-        self.staging_y = self.gameArea.y + 50
         self.next_tetromino = self.get_random_tetromino()
         self.playing = True
         pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)  # 1000 milliseconds = 1 second
@@ -30,31 +27,43 @@ class Tetris(MovementHandler):
         self.score = 0
     
     def play(self):
-        # start the game
-        self.start()
-        
-        # game loop
         while True:
-            # calculate the frame rate
-            self.clock.tick(30)
+            # start the game
+            self.start()
+            
+            # game loop
+            while self.playing:
+                # calculate the frame rate
+                self.clock.tick(30)
 
-            # handle events
-            self.eventHandler()
+                self.handle_keypressed()
+                # handle events
+                self.eventHandler()
 
-            self.handle_keypressed()
-
-            self.updateScreen()
+                self.updateScreen()
+            
+            self.gameOverScreen()
             
             
     def eventHandler(self):
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 self.quit()
             if event.type == MOVE_DOWN_EVENT:
                 self.moveDown()
             if event.type == pygame.KEYDOWN:
                 self.handleMovement(event.key)
+            if event.type == TETROMINO_HIT_SOMETHING:
+                self.tetrominoHitSomething()
     
+    def tetrominoHitSomething(self):
+        if not self.gameArea.addBlocks(self.active_tetromino.shape):
+            self.gameOver()
+        lines_cleared = self.gameArea.checkRows()
+        self.update_score(lines_cleared) 
+        self.spawnTetromino()
+
     def quit(self):
         pygame.quit()
         sys.exit()
@@ -88,7 +97,6 @@ class Tetris(MovementHandler):
         self.next_tetromino = self.get_random_tetromino()
         self.active_tetromino = None
         self.playing = True
-        self.start()
 
     def update_score(self, lines_cleared):
         if lines_cleared == 1:
@@ -104,6 +112,7 @@ class Tetris(MovementHandler):
         self.updateScreen()
         self.playing = False
 
+    def gameOverScreen(self):
         # Set up the font and color for text
         font = pygame.font.Font(None, 36)
         text_color = (255, 255, 255)  # white

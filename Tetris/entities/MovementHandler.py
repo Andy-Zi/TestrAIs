@@ -3,20 +3,20 @@ import pygame
 
 from Tetris.constants import BLOCKSIZE
 
+from Tetris.events import *
+
 class MovementHandler:
 
     def __init__(self, gameArea, active_tetromino):
         self.gameArea = gameArea
+        self.staging_x = self.gameArea.x + self.gameArea.width + 80
+        self.staging_y = self.gameArea.y + 50
         self.active_tetromino = active_tetromino
         self.key_last_pressed = {pygame.K_UP: 0, pygame.K_LEFT: 0, pygame.K_RIGHT: 0, pygame.K_DOWN: 0, pygame.K_SPACE: 0}
+        self.key_delay = {pygame.K_UP: 0.5, pygame.K_LEFT: 0.2, pygame.K_RIGHT: 0.2, pygame.K_DOWN: 0.2, pygame.K_SPACE: 0.5}
     
-    def moveDown(self):
-        if self.active_tetromino.move_down():
-                if not self.gameArea.addBlocks(self.active_tetromino.shape):
-                    self.gameOver()
-                lines_cleared = self.gameArea.checkRows()
-                self.update_score(lines_cleared) 
-                self.spawnTetromino()
+    def moveDown(self, raise_event = True):
+        self.active_tetromino.move_down(raise_event)
     
     def moveLeft(self):
         self.active_tetromino.move_left()
@@ -29,11 +29,6 @@ class MovementHandler:
 
     def hardDrop(self):
         self.active_tetromino.hardDrop()
-        if not self.gameArea.addBlocks(self.active_tetromino.shape):
-            self.gameOver()
-        lines_cleared = self.gameArea.checkRows()
-        self.update_score(lines_cleared) 
-        self.spawnTetromino()
     
     def handleMovement(self, key):
         if key in self.key_last_pressed:
@@ -44,7 +39,9 @@ class MovementHandler:
             case pygame.K_RIGHT:
                 self.moveRight()
             case pygame.K_DOWN:
-                self.moveDown()
+                pygame.time.set_timer(MOVE_DOWN_EVENT, 0)
+                self.moveDown(raise_event = False)
+                pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)
             case pygame.K_UP:
                 self.rotate()
             case pygame.K_SPACE:
@@ -55,7 +52,7 @@ class MovementHandler:
     def handle_keypressed(self):
         keys = pygame.key.get_pressed()
         for key in self.key_last_pressed:
-            if keys[key] and time.time() - self.key_last_pressed.get(key, 0) > 0.25:
+            if keys[key] and time.time() - self.key_last_pressed.get(key, 0) > self.key_delay[key]:
                 self.handleMovement(key)
                 self.key_last_pressed[key] = time.time()
     

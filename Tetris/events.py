@@ -1,0 +1,4 @@
+import pygame
+
+MOVE_DOWN_EVENT = pygame.USEREVENT + 1
+TETROMINO_HIT_SOMETHING = pygame.USEREVENT + 2

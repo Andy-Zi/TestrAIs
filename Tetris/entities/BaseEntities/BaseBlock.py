@@ -18,11 +18,17 @@ class BaseBlock:
         return self.x >= self.gameArea.x and self.x < self.gameArea.x + self.gameArea.width and self.y >= self.gameArea.y and self.y < self.gameArea.y + self.gameArea.height
     
     def canMoveDown(self):
-        return self.y + self.size < self.gameArea.y + self.gameArea.height
+        if self.y + (2 * self.size) > self.gameArea.y + self.gameArea.height:
+            return False
+        for row in self.gameArea.blocks:
+            for block in row:
+                if block != None and block.x == self.x and block.y == self.y + self.size:
+                    return False
+        return True
     
     def canMoveLeft(self):
-        if not self.x > self.gameArea.x:
-            False
+        if self.x - self.size < self.gameArea.x:
+            return False
         for row in self.gameArea.blocks:
             for block in row:
                 if block != None and block.x == self.x - self.size and block.y == self.y:
@@ -30,8 +36,8 @@ class BaseBlock:
         return True
     
     def canMoveRight(self):
-        if not self.x + self.size < self.gameArea.x + self.gameArea.width:
-            False
+        if self.x + (2 * self.size) > self.gameArea.x + self.gameArea.width:
+            return False
         for row in self.gameArea.blocks:
             for block in row:
                 if block != None and block.x == self.x + self.size and block.y == self.y:
@@ -98,19 +104,3 @@ class BaseBlock:
                     return shift_x, shift_y, False
 
         return shift_x, shift_y, True
-
-    def hitGround(self):
-        # check if the block hit the ground
-        if self.y + self.size >= self.gameArea.y + self.gameArea.height:
-            return True
-        else:
-            return False
-    
-    def hitBlock(self, blocks):
-        # check if the block hit another block
-        x = int((self.x - self.gameArea.x) // BLOCKSIZE)
-        y = int((self.y - self.gameArea.y) // BLOCKSIZE)
-        if y + 1 < len(blocks) and blocks[y+1][x] != None and y + 1 >= 0:
-            return True
-        else:
-            return False

@@ -1,3 +1,6 @@
+import pygame
+
+from Tetris.events import TETROMINO_HIT_SOMETHING
 from Tetris.entities import BaseBlock
 from Tetris.constants import BLOCKSIZE
 
@@ -42,20 +45,18 @@ class BaseTetromino:
             block.moveRight()
         return True
         
-    def move_down(self):
+    def move_down(self, raise_event = True):
         for block in self.shape:
             if not block.canMoveDown():
-                return
+                if raise_event:
+                    pygame.event.post(pygame.event.Event(TETROMINO_HIT_SOMETHING))
+                return False
         for block in self.shape:
             block.moveDown()
-        for block in self.shape:
-            if block.hitGround():
-                return True  
-            if block.hitBlock(self.gameArea.blocks):
-                return True
+        return True
     
     def hardDrop(self):
-        while not self.move_down():
+        while self.move_down():
             pass
     
     def shape_to_blocks(self, shape):
