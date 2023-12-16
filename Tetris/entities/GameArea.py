@@ -1,6 +1,6 @@
 import pygame
 
-from constants import BLOCKSIZE
+from Tetris.constants import BLOCKSIZE
 
 class GameArea:
     def __init__(self, width, height, screen):

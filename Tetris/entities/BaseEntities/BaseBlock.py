@@ -1,5 +1,5 @@
 import pygame
-from constants import BLOCKSIZE
+from Tetris.constants import BLOCKSIZE
 
 class BaseBlock:
     def __init__(self, x, y, color, turningPoint, gameArea):
@@ -21,10 +21,22 @@ class BaseBlock:
         return self.y + self.size < self.gameArea.y + self.gameArea.height
     
     def canMoveLeft(self):
-        return self.x > self.gameArea.x
+        if not self.x > self.gameArea.x:
+            False
+        for row in self.gameArea.blocks:
+            for block in row:
+                if block != None and block.x == self.x - self.size and block.y == self.y:
+                    return False
+        return True
     
     def canMoveRight(self):
-        return self.x + self.size < self.gameArea.x + self.gameArea.width
+        if not self.x + self.size < self.gameArea.x + self.gameArea.width:
+            False
+        for row in self.gameArea.blocks:
+            for block in row:
+                if block != None and block.x == self.x + self.size and block.y == self.y:
+                    return False
+        return True
     
     def moveLeft(self):
         self.x -= self.size
@@ -77,12 +89,15 @@ class BaseBlock:
             shift_x = -(new_x - self.gameArea.x)
         if new_x + self.size > self.gameArea.x + self.gameArea.width:
             shift_x = -((new_x + self.size) - (self.gameArea.x + self.gameArea.width))
-        # if new_y < self.gameArea.y:
-        #     shift_y = 30
         if  new_y + self.size > self.gameArea.y + self.gameArea.height:
             shift_y = -30
+        
+        for row in self.gameArea.blocks:
+            for block in row:
+                if block != None and block.x == new_x + shift_x and block.y == new_y + shift_y:
+                    return shift_x, shift_y, False
 
-        return shift_x, shift_y
+        return shift_x, shift_y, True
 
     def hitGround(self):
         # check if the block hit the ground

@@ -1,5 +1,5 @@
-from entities import BaseBlock
-from constants import BLOCKSIZE
+from Tetris.entities import BaseBlock
+from Tetris.constants import BLOCKSIZE
 
 class BaseTetromino:
 
@@ -13,25 +13,15 @@ class BaseTetromino:
         self.baseShape = shape
         self.shape = self.shape_to_blocks(self.baseShape)
             
-    def move_to_starting_position(self):
+    def move(self, x, y):
         old_x = self.x
         old_y = self.y
-        self.x = self.get_x_starting_position()
-        self.y = self.get_y_starting_position()
+        self.x = x
+        self.y = y
         for block in self.shape:
             block.x = self.x + block.x - old_x
             block.y = self.y + block.y - old_y
     
-    def get_x_starting_position(self):
-        gameAreaWidth = self.gameArea.width // BLOCKSIZE
-        tetrominoWidth = len(self.baseShape[0])
-        startingPosition = (gameAreaWidth - tetrominoWidth) // 2
-        startingPosition *= BLOCKSIZE
-        return startingPosition + self.gameArea.x
-    
-    def get_y_starting_position(self):
-        return self.gameArea.y - BLOCKSIZE * len(self.baseShape)
-
     def draw(self, surface):
         for block in self.shape:
             block.draw(surface)
@@ -39,16 +29,18 @@ class BaseTetromino:
     def move_left(self):
         for block in self.shape:
             if not block.canMoveLeft():
-                return
+                return False
         for block in self.shape:
             block.moveLeft()
+        return True
         
     def move_right(self):
         for block in self.shape:
             if not block.canMoveRight():
-                return
+                return False
         for block in self.shape:
             block.moveRight()
+        return True
         
     def move_down(self):
         for block in self.shape:
@@ -61,6 +53,10 @@ class BaseTetromino:
                 return True  
             if block.hitBlock(self.gameArea.blocks):
                 return True
+    
+    def hardDrop(self):
+        while not self.move_down():
+            pass
     
     def shape_to_blocks(self, shape):
         blocks = []
@@ -86,9 +82,11 @@ class BaseTetromino:
         shift_x = []
         shift_y = []
         for block in self.shape:
-            s_x, s_y = block.canRotate()
+            s_x, s_y, canRotate = block.canRotate()
             shift_x.append(s_x)
             shift_y.append(s_y)
+            if not canRotate:
+                return
         # get the absolute maximum shift but keep the sign
         if max(shift_x) == 0:
             shift_x = min(shift_x)

@@ -1,6 +1,6 @@
-from Game import Game
+from Tetris.Tetris import Tetris
 
-tetris = Game()
+game = Tetris()
 
 
-tetris.play()
+game.play()

@@ -1,15 +1,15 @@
-from entities import BaseTetromino
+from Tetris.entities import BaseTetromino
 
-class STetromino(BaseTetromino):
+class OTetromino(BaseTetromino):
 
-    color = (7, 240, 1)  # Green color
-    turningPoint = (1.5, 1.5)
+    color = (240, 240, 1)  # Yellow color
+    turningPoint = (1,1)
     
-    def __init__(self, gameArea, x, y):
+    def __init__(self, gameArea,x ,y):
         super().__init__(
                 shape=[
-                    [0, 1, 1],
-                    [1, 1, 0],
+                    [1, 1],
+                    [1, 1],
                 ],
                 turningPoint=self.turningPoint,
                 color=self.color,

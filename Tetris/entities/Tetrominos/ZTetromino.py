@@ -1,4 +1,4 @@
-from entities import BaseTetromino
+from Tetris.entities import BaseTetromino
 
 class ZTetromino(BaseTetromino):
 
