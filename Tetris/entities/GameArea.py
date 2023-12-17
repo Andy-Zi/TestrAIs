@@ -74,3 +74,28 @@ class GameArea:
     
     def getPositionOnGrid(self, x, y):
         return (int((x - self.x) // BLOCKSIZE), int((y - self.y) // BLOCKSIZE))
+
+    def goodness(self):
+        total_height = 0
+        total_holes = 0
+        total_completed_lines = 0
+
+        for i in range(self.width):
+            column_height = 0
+            column_holes = 0
+            for j in range(self.height):
+                if self.grid[j][i] != 0:
+                    column_height = self.height - j
+                    break
+            for j in range(column_height, self.height):
+                if self.grid[j][i] == 0:
+                    column_holes += 1
+            total_height += column_height
+            total_holes += column_holes
+
+        for i in range(self.height):
+            if all(self.grid[i][j] != 0 for j in range(self.width)):
+                total_completed_lines += 1
+
+        return total_completed_lines * 1.0 - total_height * 0.5 - total_holes * 1.0
+        
