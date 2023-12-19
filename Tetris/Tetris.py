@@ -44,7 +44,9 @@ class Tetris(MovementHandler):
             
             self.gameOverScreen()
             
-            
+    def start_ai(self):
+        self.start()
+
     def eventHandler(self):
         events = pygame.event.get()
         for event in events:

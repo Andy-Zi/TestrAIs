@@ -76,26 +76,23 @@ class GameArea:
         return (int((x - self.x) // BLOCKSIZE), int((y - self.y) // BLOCKSIZE))
 
     def goodness(self):
-        total_height = 0
+        highest_column = 0
         total_holes = 0
-        total_completed_lines = 0
-
-        for i in range(self.width):
+        
+        for i in range(len(self.blocks[0])):  # iterate over each column
             column_height = 0
-            column_holes = 0
-            for j in range(self.height):
-                if self.grid[j][i] != 0:
-                    column_height = self.height - j
-                    break
-            for j in range(column_height, self.height):
-                if self.grid[j][i] == 0:
-                    column_holes += 1
-            total_height += column_height
-            total_holes += column_holes
-
-        for i in range(self.height):
-            if all(self.grid[i][j] != 0 for j in range(self.width)):
-                total_completed_lines += 1
-
-        return total_completed_lines * 1.0 - total_height * 0.5 - total_holes * 1.0
+            found_block = False  # flag to indicate if a block has been found in the current column
+            hole_size = 0  # size of the current hole
+            for j in range(len(self.blocks)):  # iterate over each cell in the column
+                if self.blocks[j][i] is not None:
+                    column_height = len(self.blocks) - j
+                    found_block = True
+                    if hole_size > 0:  # if a block is found and hole_size > 0, it's a hole
+                        total_holes += hole_size  # add the size of the hole to total_holes
+                        hole_size = 0  # reset hole_size
+                elif found_block:  # if the cell is None and a block has been found above, increment hole_size
+                    hole_size += 1
+            highest_column = max(highest_column, column_height)
+        
+        return 0.5 * (len(self.blocks) - highest_column) + 0.5 * (len(self.blocks[0]) - total_holes) 
         

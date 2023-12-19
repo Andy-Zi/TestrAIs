@@ -1,4 +1,7 @@
-class Tetrominoes(Enum):
+from enum import Enum
+
+
+class Tetrominos(Enum):
     ITetromino = 0
     JTetromino = 1
     LTetromino = 2
@@ -6,3 +9,5 @@ class Tetrominoes(Enum):
     STetromino = 4
     TTetromino = 5
     ZTetromino = 6
+
+    

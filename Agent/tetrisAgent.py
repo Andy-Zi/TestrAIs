@@ -1,6 +1,8 @@
 from copy import deepcopy
+from Agent.helper import plot
+from Model.Linear_QNet import Linear_QNet, QTrainer
 from Tetris.Tetris import Tetris
-from Tetris.entities.Tetrimino import Tetrimino
+from Tetris.entities.Tetrimino import Tetrominos
 import torch
 import random
 from collections import deque
@@ -13,19 +15,20 @@ LR = 0.001
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 class tetrisAgent():
-    def __init__(self) -> None:
+    def __init__(self, game) -> None:
         self.n_games = 0
         self.epsilon = 0
-        self.gamma = 0
+        self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        self.model = None
-        self.trainer = None
+        input_size = self.get_state(game).shape[1]
+        self.model = Linear_QNet(input_size, 256, 5)
+        self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
     
     def get_state(self, game):
         # Game Area
         gameArea = deepcopy(game.gameArea)
         # add the active tetromino to the game area
-        gameArea.addBlocks(game.active_tetromino.blocks)
+        gameArea.addBlocks(game.active_tetromino.shape)
         # convert the game area from blocks to a matrix of 0s and 1s
         gameAreaMatrix = []
         for row in gameArea.blocks:
@@ -38,17 +41,22 @@ class tetrisAgent():
             gameAreaMatrix.append(rowMatrix)
         gameAreaMatrix = np.array(gameAreaMatrix)
         gameAreaMatrix_flat = gameAreaMatrix.flatten()
+        gameAreaMatrix_flat = gameAreaMatrix_flat.reshape(1, -1)
         # Active Tetromino
-        active_tetromino = np.array(Tetrimino(game.active_tetromino.__class__.__name__), dtype=int)
+        active_tetromino = np.array(Tetrominos[game.active_tetromino.__class__.__name__].value, dtype=int)
+        active_tetromino = active_tetromino.reshape(1, -1)
         # Next Tetromino()
-        next_tetromino = np.array(Tetrimino(game.next_tetromino.__class__.__name__), dtype=int)
+        next_tetromino = np.array(Tetrominos[game.next_tetromino.__class__.__name__].value, dtype=int)
+        next_tetromino = next_tetromino.reshape(1, -1)
         # Score
         score = np.array(game.score)
+        score = score.reshape(1, -1)
         # goodness of the game area
         goodness = np.array(gameArea.goodness())
+        goodness = goodness.reshape(1, -1)
 
         # create the state
-        return np.concatenate((gameAreaMatrix_flat, active_tetromino, next_tetromino, score, goodness))
+        return np.concatenate((gameAreaMatrix_flat, active_tetromino, next_tetromino, score, goodness), axis=1)
     
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))
@@ -74,18 +82,19 @@ class tetrisAgent():
             final_move[move] = 1
         else:
             state0 = torch.tensor(state, dtype=torch.float).to(device)
-            prediction = self.model.predict(state0)
+            prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
         return final_move
     
-def train(self):
+def train():
     plot_scores = []
     plot_mean_scores = []
     total_score = 0
     record = 0
-    agent = tetrisAgent()
     game = Tetris()
+    game.start_ai()
+    agent = tetrisAgent(game)
     while True:
         state_old = agent.get_state(game)
         
@@ -106,7 +115,7 @@ def train(self):
 
             if score > record:
                 record = score
-                # agent.model.save()
+                agent.model.save()
 
             print('Game', agent.n_games, 'Score', score, 'Record:', record)
 
@@ -114,7 +123,7 @@ def train(self):
             total_score += score
             mean_score = total_score / agent.n_games
             plot_mean_scores.append(mean_score)
-            # plot(plot_scores, plot_mean_scores)
+            plot(plot_scores, plot_mean_scores)
 
 if __name__ == "__main__":
     train()
