@@ -2,12 +2,12 @@ from enum import Enum
 
 
 class Tetrominos(Enum):
-    ITetromino = 0
-    JTetromino = 1
-    LTetromino = 2
-    OTetromino = 3
-    STetromino = 4
-    TTetromino = 5
-    ZTetromino = 6
+    ITetromino = 1
+    JTetromino = 2
+    LTetromino = 3
+    OTetromino = 4
+    STetromino = 5
+    TTetromino = 6
+    ZTetromino = 7
 
     

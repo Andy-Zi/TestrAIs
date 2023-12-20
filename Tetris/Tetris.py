@@ -21,10 +21,17 @@ class Tetris(MovementHandler):
         pygame.display.set_caption('Tetris')
         self.next_tetromino = self.get_random_tetromino()
         self.playing = True
-        pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)  # 1000 milliseconds = 1 second
         self.clock = pygame.time.Clock()
         self.level = 1
         self.score = 0
+        self.lines_cleared = 0
+        self.pevValues = {
+            'height': 0,
+            'lines': 0,
+            'holes': 0,
+            'bumpiness': 0,
+            'fitness': 0
+        }
     
     def play(self):
         while True:
@@ -46,6 +53,55 @@ class Tetris(MovementHandler):
             
     def start_ai(self):
         self.start()
+
+    def play_ai(self, action):
+        
+        self.eventHandler()
+            
+        up, right, down, left, space = action
+        
+        if up:
+            self.rotate()
+        if right:
+            self.moveRight()
+        if down:
+            self.moveDown()
+        if left:
+            self.moveLeft()
+        if space:
+            self.hardDrop()
+
+        self.eventHandler()
+
+        reward = self.fitness_func()
+    
+        # update the game state
+        self.updateScreen()
+
+        # return the reward, done, score
+        done = not self.playing
+        score = self.score
+        self.clock.tick(30)
+        return reward, done, score
+
+    def fitness_func(self):
+        height = self.gameArea.highest_column()
+        prev_height = self.pevValues['height']
+        holes = self.gameArea.holes()
+        prev_holes = self.pevValues['holes']
+        bumpiness = self.gameArea.bumpiness()
+        prev_bumpiness = self.pevValues['bumpiness']
+        lines = self.lines_cleared
+        prev_lines = self.pevValues['lines']
+        
+        fitness = -0.51 * (height - prev_height) + 0.76 * (lines - prev_lines) - 0.36 * (holes - prev_holes) - 0.18 * (bumpiness - prev_bumpiness)
+                
+        self.pevValues['height'] = height
+        self.pevValues['holes'] = holes
+        self.pevValues['bumpiness'] = bumpiness
+        self.pevValues['lines'] = lines
+        
+        return fitness
 
     def eventHandler(self):
         events = pygame.event.get()
@@ -93,6 +149,7 @@ class Tetris(MovementHandler):
     
     def start(self):
         self.spawnTetromino()
+        pygame.time.set_timer(MOVE_DOWN_EVENT, 1000)
     
     def restart(self):
         self.gameArea.clear()
@@ -101,6 +158,7 @@ class Tetris(MovementHandler):
         self.playing = True
 
     def update_score(self, lines_cleared):
+        self.lines_cleared += lines_cleared
         if lines_cleared == 1:
             self.score += 100
         elif lines_cleared == 2:
@@ -113,6 +171,7 @@ class Tetris(MovementHandler):
     def gameOver(self):
         self.updateScreen()
         self.playing = False
+        pygame.time.set_timer(MOVE_DOWN_EVENT, 0)
 
     def gameOverScreen(self):
         # Set up the font and color for text

@@ -28,7 +28,8 @@ class tetrisAgent():
         # Game Area
         gameArea = deepcopy(game.gameArea)
         # add the active tetromino to the game area
-        gameArea.addBlocks(game.active_tetromino.shape)
+        if game.active_tetromino != None:
+            gameArea.addBlocks(game.active_tetromino.shape)
         # convert the game area from blocks to a matrix of 0s and 1s
         gameAreaMatrix = []
         for row in gameArea.blocks:
@@ -43,10 +44,16 @@ class tetrisAgent():
         gameAreaMatrix_flat = gameAreaMatrix.flatten()
         gameAreaMatrix_flat = gameAreaMatrix_flat.reshape(1, -1)
         # Active Tetromino
-        active_tetromino = np.array(Tetrominos[game.active_tetromino.__class__.__name__].value, dtype=int)
+        if game.active_tetromino != None:
+            active_tetromino = np.array(Tetrominos[game.active_tetromino.__class__.__name__].value, dtype=int)
+        else:
+            active_tetromino = np.array(0)
         active_tetromino = active_tetromino.reshape(1, -1)
         # Next Tetromino()
-        next_tetromino = np.array(Tetrominos[game.next_tetromino.__class__.__name__].value, dtype=int)
+        if game.next_tetromino != None:
+            next_tetromino = np.array(Tetrominos[game.next_tetromino.__class__.__name__].value, dtype=int)
+        else:
+            next_tetromino = np.array(0)
         next_tetromino = next_tetromino.reshape(1, -1)
         # Score
         score = np.array(game.score)
@@ -85,7 +92,7 @@ class tetrisAgent():
             prediction = self.model(state0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
-        return final_move
+        return np.array(final_move)
     
 def train():
     plot_scores = []
@@ -100,7 +107,7 @@ def train():
         
         final_move = agent.get_action(state_old)
         
-        reward, done, score = game.play_step(final_move)
+        reward, done, score = game.play_ai(final_move)
         
         state_new = agent.get_state(game)
         
@@ -109,7 +116,8 @@ def train():
         agent.remember(state_old, final_move, reward, state_new, done)
 
         if done:
-            game.reset()
+            game.restart()
+            game.start()
             agent.n_games += 1
             agent.train_long_memory()
 

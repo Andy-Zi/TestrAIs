@@ -96,3 +96,36 @@ class GameArea:
         
         return 0.5 * (len(self.blocks) - highest_column) + 0.5 * (len(self.blocks[0]) - total_holes) 
         
+    def highest_column(self):
+        for i in range(len(self.blocks[0])):
+            for j in range(len(self.blocks)):
+                if self.blocks[j][i] is not None:
+                    return len(self.blocks) - j
+        return 0
+    
+    def holes(self):
+        total_holes = 0
+        for i in range(len(self.blocks[0])):
+            found_block = False
+            hole_size = 0
+            for j in range(len(self.blocks)):
+                if self.blocks[j][i] is not None:
+                    found_block = True
+                    if hole_size > 0:
+                        total_holes += hole_size
+                        hole_size = 0
+                elif found_block:
+                    hole_size += 1
+        return total_holes
+    
+    def bumpiness(self):
+        bumpiness = 0
+        for i in range(len(self.blocks[0]) - 1):
+            bumpiness += abs(self.column_height(i) - self.column_height(i + 1))
+        return bumpiness
+
+    def column_height(self, column):
+        for i in range(len(self.blocks)):
+            if self.blocks[i][column] is not None:
+                return len(self.blocks) - i
+        return 0
