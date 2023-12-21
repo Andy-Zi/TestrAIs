@@ -20,8 +20,8 @@ class tetrisAgent():
         self.epsilon = 0
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        input_size = self.get_state(game).shape[1]
-        self.model = Linear_QNet(input_size, 256, 5)
+        input_size = self.get_state(game).shape[0]
+        self.model = Linear_QNet(input_size, 256, 5).to(device)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
     
     def get_state(self, game):
@@ -63,7 +63,7 @@ class tetrisAgent():
         goodness = goodness.reshape(1, -1)
 
         # create the state
-        return np.concatenate((gameAreaMatrix_flat, active_tetromino, next_tetromino, score, goodness), axis=1)
+        return np.concatenate((gameAreaMatrix_flat, active_tetromino, next_tetromino, score, goodness), axis=1)[0]
     
     def remember(self, state, action, reward, next_state, done):
         self.memory.append((state, action, reward, next_state, done))

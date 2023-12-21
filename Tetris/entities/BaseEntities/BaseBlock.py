@@ -96,7 +96,7 @@ class BaseBlock:
         if new_x + self.size > self.gameArea.x + self.gameArea.width:
             shift_x = -((new_x + self.size) - (self.gameArea.x + self.gameArea.width))
         if  new_y + self.size > self.gameArea.y + self.gameArea.height:
-            shift_y = -30
+            shift_y = -((new_y + self.size) - (self.gameArea.y + self.gameArea.height))
         
         for row in self.gameArea.blocks:
             for block in row:
