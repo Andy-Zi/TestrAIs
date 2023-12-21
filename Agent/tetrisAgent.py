@@ -1,6 +1,6 @@
 from copy import deepcopy
 from Agent.helper import plot
-from Model.Linear_QNet import Linear_QNet, QTrainer
+from Model.Model import Model, QTrainer
 from Tetris.Tetris import Tetris
 from Tetris.entities.Tetrimino import Tetrominos
 import torch
@@ -20,8 +20,7 @@ class tetrisAgent():
         self.epsilon = 0
         self.gamma = 0.9
         self.memory = deque(maxlen=MAX_MEMORY)
-        input_size = self.get_state(game).shape[0]
-        self.model = Linear_QNet(input_size, 256, 5).to(device)
+        self.model = Model().to(device)
         self.trainer = QTrainer(self.model, lr=LR, gamma=self.gamma)
     
     def get_state(self, game):
@@ -41,8 +40,8 @@ class tetrisAgent():
                     rowMatrix.append(1)
             gameAreaMatrix.append(rowMatrix)
         gameAreaMatrix = np.array(gameAreaMatrix)
-        gameAreaMatrix_flat = gameAreaMatrix.flatten()
-        gameAreaMatrix_flat = gameAreaMatrix_flat.reshape(1, -1)
+        # gameAreaMatrix_flat = gameAreaMatrix.flatten()
+        # gameAreaMatrix_flat = gameAreaMatrix_flat.reshape(1, -1)
         # Active Tetromino
         if game.active_tetromino != None:
             active_tetromino = np.array(Tetrominos[game.active_tetromino.__class__.__name__].value, dtype=int)
@@ -62,11 +61,11 @@ class tetrisAgent():
         goodness = np.array(gameArea.goodness())
         goodness = goodness.reshape(1, -1)
 
-        # create the state
-        return np.concatenate((gameAreaMatrix_flat, active_tetromino, next_tetromino, score, goodness), axis=1)[0]
+        features = np.concatenate((active_tetromino, next_tetromino, score, goodness), axis=1)[0]
+        return gameAreaMatrix, features
     
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append((state, action, reward, next_state, done))
+    def remember(self, state_area, state_features, action, reward, next_state_area, next_state_features, done):
+        self.memory.append((state_area, state_features, action, reward, next_state_area, next_state_features, done))
 
     def train_long_memory(self):
         if len(self.memory) > BATCH_SIZE:
@@ -74,22 +73,23 @@ class tetrisAgent():
         else:
             mini_sample = self.memory
         
-        states, actions, rewards, next_states, dones = zip(*mini_sample)
-        self.trainer.train_step(states, actions, rewards, next_states, dones)
+        state_area, state_features, action, reward, next_state_area, next_state_features, done = zip(*mini_sample)
+        self.trainer.train_step(state_area, state_features, action, reward, next_state_area, next_state_features, done)
         
     
-    def train_short_memory(self, state, action, reward, next_state, done):
-        self.trainer.train_step(state, action, reward, next_state, done)
+    def train_short_memory(self, state_area, state_features, action, reward, next_state_area, next_state_features, done):
+        self.trainer.train_step(state_area, state_features, action, reward, next_state_area, next_state_features, done)
     
-    def get_action(self, state):
+    def get_action(self, area, features):
         self.epsilon = 80 - self.n_games
         final_move = [0,0,0,0,0]
         if random.randint(0, 200) < self.epsilon:
             move = random.randint(0, 4)
             final_move[move] = 1
         else:
-            state0 = torch.tensor(state, dtype=torch.float).to(device)
-            prediction = self.model(state0)
+            area0 = torch.tensor(area, dtype=torch.float).to(device).unsqueeze(0)
+            features0 = torch.tensor(features, dtype=torch.float).to(device).unsqueeze(0)
+            prediction = self.model(area0, features0)
             move = torch.argmax(prediction).item()
             final_move[move] = 1
         return np.array(final_move)
@@ -103,17 +103,17 @@ def train():
     game.start_ai()
     agent = tetrisAgent(game)
     while True:
-        state_old = agent.get_state(game)
+        state_old_area, state_old_features = agent.get_state(game)
         
-        final_move = agent.get_action(state_old)
+        final_move = agent.get_action(state_old_area, state_old_features)
         
         reward, done, score = game.play_ai(final_move)
         
-        state_new = agent.get_state(game)
+        state_new_area, state_new_features = agent.get_state(game)
         
-        agent.train_short_memory(state_old, final_move, reward, state_new, done)
+        agent.train_short_memory(state_old_area, state_old_features, final_move, reward, state_new_area, state_new_features, done)
 
-        agent.remember(state_old, final_move, reward, state_new, done)
+        agent.remember(state_old_area, state_old_features, final_move, reward, state_new_area, state_new_features, done)
 
         if done:
             game.restart()
