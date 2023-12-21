@@ -118,6 +118,7 @@ class Tetris(MovementHandler):
     def tetrominoHitSomething(self):
         if not self.gameArea.addBlocks(self.active_tetromino.shape):
             self.gameOver()
+            return
         lines_cleared = self.gameArea.checkRows()
         self.update_score(lines_cleared) 
         self.spawnTetromino()
@@ -208,6 +209,7 @@ class Tetris(MovementHandler):
                     mouse_pos = pygame.mouse.get_pos()
                     if play_again_rect.collidepoint(mouse_pos):
                         self.restart()
+                        return
                     elif quit_rect.collidepoint(mouse_pos):
                         pygame.quit()
                         sys.exit()

@@ -9,7 +9,6 @@ class GameArea:
         self.y = (screen_height - height * BLOCKSIZE) / 2
         self.width = width * BLOCKSIZE
         self.height = height * BLOCKSIZE
-        # define self.Blocks as a matrix of the size of the game area and initialize it with None
         self.blocks = [[None for _ in range(width)] for _ in range(height)]
     
     def clear(self):
@@ -20,7 +19,7 @@ class GameArea:
 
         # add a grid
         for i in range(1, self.width // BLOCKSIZE):
-            pygame.draw.line(surface, (255, 255, 255), (self.x + i * BLOCKSIZE, self.y), (self.x + i * BLOCKSIZE, self.y + self.height))
+            pygame.draw.line(surface, (255, 255, 255), (self.x + i * BLOCKSIZE, self.y), (self.x + i * BLOCKSIZE, self.y  + self.height))
         for i in range(1, self.height // BLOCKSIZE):
             pygame.draw.line(surface, (255, 255, 255), (self.x, self.y + i * BLOCKSIZE), (self.x + self.width, self.y + i * BLOCKSIZE))
         
@@ -29,11 +28,12 @@ class GameArea:
             for block in row:
                 if block != None:
                     block.draw(surface)
+
     def canAddBlocks(self, blocks):
         for block in blocks:
             x = int((block.x - self.x) // BLOCKSIZE)
             y = int((block.y - self.y) // BLOCKSIZE)
-            if y < 0:
+            if y < 0 or x < 0 or x >= len(self.blocks[0]) or y >= len(self.blocks) or self.blocks[y][x] != None:
                 return False
             return True
         

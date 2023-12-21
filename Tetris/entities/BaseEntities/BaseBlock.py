@@ -11,8 +11,8 @@ class BaseBlock:
         self.turningPoint = turningPoint
 
     def draw(self, surface):
-        # if self.inGameArea():
-        pygame.draw.rect(surface, self.color, (self.x, self.y, self.size, self.size))
+        if self.inGameArea() or self.x >= self.gameArea.x + self.gameArea.width:
+            pygame.draw.rect(surface, self.color, (self.x, self.y, self.size, self.size))
     
     def inGameArea(self):
         return self.x >= self.gameArea.x and self.x < self.gameArea.x + self.gameArea.width and self.y >= self.gameArea.y and self.y < self.gameArea.y + self.gameArea.height

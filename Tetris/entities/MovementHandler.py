@@ -76,4 +76,4 @@ class MovementHandler:
         return startingPosition + self.gameArea.x
     
     def get_y_starting_position(self):
-        return self.gameArea.y - BLOCKSIZE * len(self.active_tetromino.baseShape)
+        return self.gameArea.y - (BLOCKSIZE * len(self.active_tetromino.baseShape))
